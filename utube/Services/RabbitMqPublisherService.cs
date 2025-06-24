@@ -1,9 +1,6 @@
-﻿using Microsoft.Identity.Client;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace utube.Services
 {
@@ -38,8 +35,8 @@ namespace utube.Services
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
 
-             
-           
+
+
         }
 
         public async Task Publish<T>(string queueName, T message)
@@ -57,7 +54,7 @@ namespace utube.Services
 
             var body = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(message));
             var props = new BasicProperties();
-            await _channel.BasicPublishAsync(exchange:"", routingKey: queueName,
+            await _channel.BasicPublishAsync(exchange: "", routingKey: queueName,
      mandatory: true, basicProperties: props, body: body);
         }
     }

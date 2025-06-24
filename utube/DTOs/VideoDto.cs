@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using utube.Enums;
+﻿using utube.Enums;
 namespace utube.DTOs
 {
-    
+
 
     public class VideoDto
     {

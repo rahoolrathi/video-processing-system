@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using utube.DTOs;
 using utube.Models;
 using utube.Repositories;
@@ -40,7 +39,7 @@ namespace utube.Controllers
                 }
                 return BadRequest(ModelState);
             }
-            Console.WriteLine("hitiing");
+            
             var profile = new EncodingProfile
             {
                 Id = Guid.NewGuid(),
@@ -58,36 +57,12 @@ namespace utube.Controllers
             return CreatedAtAction(nameof(GetProfile), new { id = profile.Id }, MapToDto(profile));
         }
 
-        [HttpPut("profiles/{id}")]
-        public async Task<IActionResult> UpdateProfile(Guid id, [FromBody] EncodingProfileWithFormatsDto dto)
-        {
-            var existing = await _profileRepository.GetByIdAsync(id);
-            if (existing == null) return NotFound();
-
-            existing.ProfileName = dto.ProfileName;
-            existing.Resolutions = dto.Resolutions;
-            existing.BitratesKbps = dto.BitratesKbps;
-
-            existing.Formats = dto.Formats.Select(f => new Format
-            {
-                FormatType = f.FormatType
-            }).ToList();
-
-            await _profileRepository.UpdateAsync(existing);
-            return NoContent();
-        }
 
 
-        // DELETE: api/admin/profiles/{id}
-        [HttpDelete("profiles/{id}")]
-        public async Task<IActionResult> DeleteProfile(Guid id)
-        {
-            var profile = await _profileRepository.GetByIdAsync(id);
-            if (profile == null) return NotFound();
 
-            await _profileRepository.DeleteAsync(profile);
-            return NoContent();
-        }
+
+
+
 
         // Helper
         private EncodingProfileWithFormatsDto MapToDto(EncodingProfile profile)
@@ -108,7 +83,7 @@ namespace utube.Controllers
         [HttpGet("profiles")]
         public async Task<ActionResult<List<EncodingProfileWithFormatsDto>>> GetAllProfiles()
         {
-            var profiles = await _profileRepository.GetAllAsync(); // Add this to your repository if it doesn’t exist
+            var profiles = await _profileRepository.GetAllAsync();
             return Ok(profiles.Select(p => MapToDto(p)).ToList());
         }
 

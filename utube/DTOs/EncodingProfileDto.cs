@@ -1,5 +1,4 @@
-﻿using utube.DTOs;
-namespace utube.DTOs
+﻿namespace utube.DTOs
 {
     public class EncodingProfileWithFormatsDto
     {

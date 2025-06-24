@@ -1,9 +1,10 @@
 ﻿
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using utube.Enums;
 namespace utube.Models
 {
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using utube.Enums;
+   
 
     public class Format
     {

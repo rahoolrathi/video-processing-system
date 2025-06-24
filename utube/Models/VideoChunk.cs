@@ -1,9 +1,10 @@
-﻿namespace utube.Models
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using utube.Enums;
+namespace utube.Models
 {
-    using System;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using utube.Enums;
+    
 
     public class VideoChunk
     {
@@ -23,7 +24,7 @@
         [Column(TypeName = "nvarchar(24)")]
         public ChunkStatus Status { get; set; }
         [Required]
-      
+
 
 
         public bool IsLastChunk { get; set; } = false;

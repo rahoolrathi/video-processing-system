@@ -8,6 +8,6 @@ namespace utube.DTOs
         public Guid Id { get; set; }
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public FormatType FormatType { get; set; }     // Enum: HLS, MPEG_DASH, etc.
-             
+
     }
 }

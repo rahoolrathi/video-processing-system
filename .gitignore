@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Uploaded chunks and merged/transcoded outputs
+/uploads/
+/Merged/
+/Transcoded/

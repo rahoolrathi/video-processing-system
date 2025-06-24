@@ -1,6 +1,6 @@
-﻿using utube.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using utube.Data;
 using utube.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace utube.Repositories
 {
@@ -8,8 +8,7 @@ namespace utube.Repositories
     {
         Task<EncodingProfile> GetByIdAsync(Guid id);
         Task AddAsync(EncodingProfile profile);
-        Task UpdateAsync(EncodingProfile profile);
-        Task DeleteAsync(EncodingProfile profile);
+
         Task<List<EncodingProfile>> GetAllAsync();
 
     }
@@ -35,48 +34,7 @@ namespace utube.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task UpdateAsync(EncodingProfile profile)
-        {
-            // Load existing profile with formats from DB
-            var existing = await _context.EncodingProfiles
-                .Include(p => p.Formats)
-                .FirstOrDefaultAsync(p => p.Id == profile.Id);
 
-            if (existing == null)
-                throw new Exception("Profile not found");
-
-            // Update scalar properties
-            existing.ProfileName = profile.ProfileName;
-            existing.Resolutions = profile.Resolutions;
-            existing.BitratesKbps = profile.BitratesKbps;
-
-            // Remove old formats
-            foreach (var format in profile.Formats.ToList())
-            {
-                _context.Formats.Remove(format); // ✅ safe now
-            }
-
-
-            // Add new formats
-            foreach (var format in profile.Formats)
-            {
-                existing.Formats.Add(new Format
-                {
-                    Id = Guid.NewGuid(),
-                    FormatType = format.FormatType,
-                    EncodingProfile = profile
-                });
-            }
-
-            await _context.SaveChangesAsync();
-        }
-
-
-        public async Task DeleteAsync(EncodingProfile profile)
-        {
-            _context.EncodingProfiles.Remove(profile);
-            await _context.SaveChangesAsync();
-        }
         public async Task<List<EncodingProfile>> GetAllAsync()
         {
             return await _context.EncodingProfiles

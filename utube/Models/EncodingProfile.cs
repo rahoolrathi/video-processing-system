@@ -1,5 +1,4 @@
-﻿using Microsoft.SqlServer.Server;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace utube.Models
 {

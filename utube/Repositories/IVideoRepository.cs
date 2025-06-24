@@ -1,9 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using utube.Models;
-using utube.Enums;
+﻿using Microsoft.EntityFrameworkCore;
 using utube.Data; // Assuming your DbContext is here
+using utube.Enums;
+using utube.Models;
 
 namespace utube.Repositories
 {
@@ -11,7 +9,7 @@ namespace utube.Repositories
     {
         Task<Video> CreateAsync(Video video);
         Task<Video> UpdateStatusAsync(Guid videoId, VideoStatus newStatus);
-        Task<Video?> GetByIdAsync(Guid videoId); 
+        Task<Video?> GetByIdAsync(Guid videoId);
     }
     public class VideoRepository : IVideoRepository
     {
@@ -26,7 +24,7 @@ namespace utube.Repositories
         {
             if (video.Id == Guid.Empty)
             {
-                video.Id = Guid.NewGuid(); 
+                video.Id = Guid.NewGuid();
             }
             _context.Videos.Add(video);
             await _context.SaveChangesAsync();

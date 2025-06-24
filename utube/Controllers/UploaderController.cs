@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using utube.DTOs;
-using utube.Enums;
 using utube.Models;
 using utube.Services;
 
@@ -23,7 +22,7 @@ namespace utube.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var videoId = await _uploadService.InitializeVideoAsync(video);
+            var videoId = await _uploadService.PrepareVideoMetaDataForUploadAsync(video);
             return Ok(new { id = videoId });
         }
 

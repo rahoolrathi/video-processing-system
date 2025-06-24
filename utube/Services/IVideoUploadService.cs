@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Threading.Tasks;
-using utube.DTOs.utube.Dtos;
+﻿using System.Security.Cryptography;
 using utube.Enums;
 using utube.Models;
 using utube.Repositories;
@@ -9,9 +6,10 @@ namespace utube.Services
 {
     public interface IVideoUploadService
     {
-        Task<Guid> InitializeVideoAsync(Video video);
+        Task<Guid> PrepareVideoMetaDataForUploadAsync(Video video);
         Task UploadChunkAsync(Guid videoId, int chunkIndex, IFormFile chunk, bool isLastChunk);
         Task<List<int>> GetUploadedChunkIndexesAsync(Guid videoId);
+
 
     }
 
@@ -20,20 +18,47 @@ namespace utube.Services
         private readonly IVideoRepository _videoRepository;
         private readonly IVideoChunkRepository _chunkRepository;
         private readonly IRabbitMqPublisherService _rabbitMqPublisher;
-
-        public VideoUploadService(IVideoRepository videoRepo, IVideoChunkRepository chunkRepo, IRabbitMqPublisherService rabbitMqPublisher)
+        private readonly ElasticSearchService _elasticSearchService;
+        public VideoUploadService(IVideoRepository videoRepo, IVideoChunkRepository chunkRepo, IRabbitMqPublisherService rabbitMqPublisher, ElasticSearchService elasticSearchService)
         {
             _videoRepository = videoRepo;
             _chunkRepository = chunkRepo;
             _rabbitMqPublisher = rabbitMqPublisher;
-
+            _elasticSearchService = elasticSearchService;
         }
 
-        public async Task<Guid> InitializeVideoAsync(Video video)
+
+        public async Task<Guid> PrepareVideoMetaDataForUploadAsync(Video video)
         {
+
+            using var rng = RandomNumberGenerator.Create();
+            byte[] keyBytes = new byte[16];
+            rng.GetBytes(keyBytes);
+            string hexKey = BitConverter.ToString(keyBytes).Replace("-", "").ToLowerInvariant();
+
+            // 🔐 Generate UUID for Key ID
+            string keyId = Guid.NewGuid().ToString();
+
+            // 📝 Assign to video
+            video.EncryptionKey = hexKey;
+            video.KeyId = keyId;
+
             var created = await _videoRepository.CreateAsync(video);
+            //video inserted into elastic search db
+            var document = new VideoDocument
+            {
+                Id = created.Id,
+                name = created.OriginalFilename,
+                UploadedAt = DateTime.UtcNow,
+                videopath = null,             
+                SelectedImageName = null,
+                Formats = null                 
+            };
+
+            await _elasticSearchService.IndexDocumentAsync(document);
             return created.Id;
         }
+
 
         public async Task UploadChunkAsync(Guid videoId, int chunkIndex, IFormFile chunk, bool isLastChunk)
         {
@@ -89,15 +114,8 @@ namespace utube.Services
                     }
 
                     await _videoRepository.UpdateStatusAsync(video.Id, VideoStatus.Uploaded);
-                    var message = new TranscodingJobMessageDto
-                    {
-                        VideoId = video.Id,
-                        VideoPath = mergedFilePath,
-                        EncodingProfileId = Guid.Parse("f81d4fae-7dec-11d0-a765-00a0c91e6bf6")
-                    };
+                    Console.WriteLine(mergedFilePath);
 
-                    // ✅ Publish to RabbitMQ
-                    await _rabbitMqPublisher.Publish("transcoding-queue", message);
                 }
             }
         }
@@ -105,7 +123,7 @@ namespace utube.Services
         public async Task<List<int>> GetUploadedChunkIndexesAsync(Guid videoId)
         {
             var chunks = await _chunkRepository.GetChunksByStatusAsync(videoId, ChunkStatus.Uploaded);
-            
+
             return chunks.Select(c => c.ChunkIndex).ToList();
         }
 

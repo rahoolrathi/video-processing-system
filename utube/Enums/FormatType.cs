@@ -3,7 +3,7 @@
     public enum FormatType
     {
         HLS,
-        DASH,
-     
+           DASH,
+
     }
 }

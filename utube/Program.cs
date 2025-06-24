@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Nest;
 using utube.Data;
 using utube.Repositories;
 using utube.Services;
@@ -10,11 +11,18 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://127.0.0.1:5500") 
+            policy.WithOrigins("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://127.0.0.1:5502")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials(); 
+                  .AllowCredentials();
         });
+});
+builder.Services.AddSingleton<IElasticClient>(sp =>
+{
+    var settings = new ConnectionSettings(new Uri("http://localhost:9200")) // your ES URI
+        .DefaultIndex("videos"); // default index name
+
+    return new ElasticClient(settings);
 });
 // Add services to the container.
 builder.Services.AddControllers();
@@ -43,9 +51,19 @@ builder.Services.AddScoped<IVideoRepository, VideoRepository>();
 builder.Services.AddScoped<IVideoChunkRepository, VideoChunkRepository>();
 builder.Services.AddScoped<IVideoUploadService, VideoUploadService>();
 builder.Services.AddScoped<IEncodingProfileRepository, EncodingProfileRepository>();
+builder.Services.AddScoped<ITranscodeJobRepository, TranscodeJobRepository>();
+builder.Services.AddScoped<IThumbnailJobRepository, ThumbnailJobRepository>();
+builder.Services.AddScoped<IWatermarkingRepository, WatermarkingRepository>();
+builder.Services.AddScoped<ThumbnailService>();
+builder.Services.AddScoped<ElasticSearchService>();
 
+builder.Services.AddSingleton<AzureBlobUploader>();
 builder.Services.AddSingleton<IRabbitMqPublisherService, RabbitMqPublisherService>();
 builder.Services.AddHostedService<TranscodingConsumerService>();
+builder.Services.AddHostedService<ThumbnailConsumerService>();
+builder.Services.AddHostedService<WatermarkingConsumer>();
+builder.Services.AddSingleton<SignedUrlGeneratorService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
