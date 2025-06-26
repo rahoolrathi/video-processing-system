@@ -1,0 +1,39 @@
+@startuml
+start
+
+:User selects video and clicks "Upload";
+:Frontend splits file into chunks;
+
+:Frontend sends POST /api/uploader with video metadata;
+:UploaderController.CreateVideo();
+:VideoUploadService.PrepareVideoMetaDataForUploadAsync();
+:VideoRepository.CreateAsync();
+:ElasticSearchService.IndexDocumentAsync();
+:SignedUrlGeneratorService.GenerateUploadSasUrl();
+:VideoUploadService.UpdatePublicUrlAsync();
+:VideoRepository.UpdatePublicUrlAsync();
+:Return {uploadId, uploadUrl, blobPath} to frontend;
+
+:Frontend saves upload info in LocalStorage;
+
+repeat
+  :Frontend checks if chunk already uploaded;
+  :Frontend uploads chunk to Azure Blob Storage (stageBlock);
+  :Frontend updates progress in LocalStorage;
+  :Frontend updates progress bar;
+repeat while (more chunks?)
+
+:Frontend calls commitBlockList on Azure Blob Storage;
+
+:Frontend sends POST /api/uploader/complete/{id};
+:UploaderController.MarkUploadComplete();
+:VideoUploadService.CompleteUploadAsync();
+:VideoRepository.MarkUploadCompleteAsync();
+:ElasticSearchService.UpdateDefaultPathAsync();
+:Return {publicUrl} to frontend;
+
+:Frontend clears upload info from LocalStorage;
+:Frontend shows processing section;
+
+stop
+@enduml

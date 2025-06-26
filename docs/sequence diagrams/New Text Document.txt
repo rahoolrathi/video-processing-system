@@ -1,0 +1,66 @@
+@startuml
+actor User
+participant "Frontend UI" as UI
+participant "UploaderController" as UC
+participant "IVideoUploadService" as VUS
+participant "IVideoRepository" as VR
+participant "ElasticSearchService" as ES
+participant "SignedUrlGeneratorService" as SUGS
+participant "Azure Blob Storage" as ABS
+participant "LocalStorage" as LS
+
+== Initialize Upload ==
+User -> UI: Select file & start upload
+UI -> UI: Calculate chunks
+
+UI -> UC: POST /api/uploader\n{filename, fileSize, totalChunks, chunkSize}
+activate UC
+
+UC -> VUS: PrepareVideoMetaDataForUploadAsync(video)
+VUS -> VR: CreateAsync(video)
+VR --> VUS: Created video
+VUS -> ES: IndexDocumentAsync(videoDocument)
+
+UC -> SUGS: GenerateUploadSasUrl(blobName)
+SUGS --> UC: signedUploadUrl
+UC -> VUS: UpdatePublicUrlAsync(videoId, signedUploadUrl)
+VUS -> VR: UpdatePublicUrlAsync()
+
+UC --> UI: {id, uploadUrl, blobPath}
+deactivate UC
+
+UI -> LS: Save upload info\n(uploadId, blobname, url)
+
+== Chunk Upload Process ==
+loop For each chunk
+    UI -> UI: Check if chunk already uploaded
+    UI -> LS: Load progress
+    
+    UI -> ABS: stageBlock(blockId, chunk)
+    ABS --> UI: Block staged
+    
+    UI -> LS: Update progress
+    UI -> UI: updateProgress()
+end
+
+== Finalize Upload ==
+UI -> ABS: commitBlockList(blockIds)
+ABS --> UI: Commit successful
+
+UI -> UC: POST /uploader/complete/{id}
+activate UC
+UC -> VUS: CompleteUploadAsync(id)
+VUS -> VR: MarkUploadCompleteAsync(id)
+VR -> VR: Update status to Uploaded
+VR --> VUS: Updated video
+VUS -> ES: UpdateDefaultPathAsync()
+UC --> UI: {publicUrl}
+deactivate UC
+
+UI -> LS: Clear upload info
+UI -> UI: Show processing section
+@enduml
+
+
+
+
