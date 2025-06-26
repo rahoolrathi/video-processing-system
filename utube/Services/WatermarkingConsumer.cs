@@ -77,7 +77,7 @@ namespace utube.Services
                 var inputPath = watermarkingRequest.VideoPath;
                 var videoId = watermarkingRequest.VideoId.ToString();
                 var text = watermarkingRequest.Text;
-                var inputFileName = Path.GetFileName(inputPath);
+                var inputFileName = watermarkingRequest.filename;// Path.GetFileName(inputPath);
                 var outputFolder = Path.Combine("watermarkingoutput", videoId);
                 Directory.CreateDirectory(outputFolder);
 

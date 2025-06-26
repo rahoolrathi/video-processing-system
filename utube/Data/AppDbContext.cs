@@ -9,7 +9,7 @@ namespace utube.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<Video> Videos { get; set; } = null!;
-        public DbSet<VideoChunk> VideoChunks { get; set; } = null!;
+      
         public DbSet<EncodingProfile> EncodingProfiles { get; set; }
         public DbSet<TranscodeJob> TranscodeJob { get; set; }
         public DbSet<Format> Formats { get; set; }
@@ -28,9 +28,7 @@ namespace utube.Data
                        .Property(v => v.Status)
                        .HasConversion<string>();
 
-            modelBuilder.Entity<VideoChunk>()
-                     .Property(v => v.Status)
-                     .HasConversion<string>();
+         
             modelBuilder.Entity<TranscodeJob>()
                     .Property(t => t.Status)
                     .HasConversion<string>();

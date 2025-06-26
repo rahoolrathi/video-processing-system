@@ -39,8 +39,8 @@ namespace utube.Controllers
             {
                 return NotFound($"Video with ID {request.VideoId} not found.");
             }
-
-            var mergedFilePath = Path.Combine("Merged", request.VideoId.ToString(), video.OriginalFilename);
+            Console.WriteLine($"Transcoding request for video: {video.PublicUrl} with profile ID: {request.EncodingProfileId}");
+            var mergedFilePath = video.PublicUrl;//Path.Combine("Merged", request.VideoId.ToString(), video.OriginalFilename);
 
             var message = new TranscodingJobMessageDto
             {

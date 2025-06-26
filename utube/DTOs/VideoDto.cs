@@ -21,6 +21,6 @@ namespace utube.DTOs
 
         public DateTime UpdatedAt { get; set; }
 
-        public List<VideoChunkDto> Chunks { get; set; }
+        
     }
 }

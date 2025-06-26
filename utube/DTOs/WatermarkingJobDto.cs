@@ -6,6 +6,7 @@
         public Guid VideoId { get; set; }
         public string Text { get; set; } = string.Empty;
         public string VideoPath { get; set; } = string.Empty;
+        public string filename { get; set; } = string.Empty;
     }
 
 }

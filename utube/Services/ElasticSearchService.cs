@@ -22,29 +22,39 @@ namespace utube.Services
             }
         }
 
-        public async Task<List<VideoDocument>> SearchAsync(string query, FormatType format)
+        public async Task<List<VideoDocument>> SearchAsync(string query, FormatType? format = null)
         {
             var cleanQuery = Path.GetFileNameWithoutExtension(query.Trim());
 
             var response = await _elasticClient.SearchAsync<VideoDocument>(s => s
-                .Query(q => q
-                    .Bool(b => b
-                        .Must(
-                            m => m.Wildcard(w => w
-                                .Field(f => f.name.Suffix("keyword")) 
-                                .Value($"*{cleanQuery}*")
-                            ),
-                            m => m.Term(t => t
-                                .Field(f => f.Formats)
-                                .Value(format)
-                            )
-                        )
-                    )
-                )
+                .Query(q =>
+                {
+                    var mustQueries = new List<QueryContainer>();
+
+                    // Always include name query
+                    mustQueries.Add(q.Wildcard(w => w
+                        .Field(f => f.name.Suffix("keyword"))
+                        .Value($"*{cleanQuery}*")
+                    ));
+
+                    // Optionally add format filter
+                    if (format.HasValue)
+                    {
+                        mustQueries.Add(q.Term(t => t
+                            .Field(f => f.Formats)
+                            .Value(format.Value)
+                        ));
+                    }
+
+                    return q.Bool(b => b.Must(mustQueries.ToArray()));
+                })
             );
+
             Console.WriteLine($"[Elasticsearch] Search query: {cleanQuery}, Format: {format}, Found: {response.Documents.Count} documents.");
             return response.Documents.ToList();
         }
+
+
 
 
 
@@ -90,6 +100,27 @@ namespace utube.Services
                 throw new Exception($"[Elasticsearch] Failed to update SelectedImageName: {response.ServerError?.Error?.Reason}");
             }
         }
+
+        public async Task UpdateDefaultPathAsync(Guid videoId, string defaultPath)
+{
+    const string IndexName = "videos";
+
+    var response = await _elasticClient.UpdateAsync<VideoDocument, object>(
+        videoId,
+        u => u
+            .Index(IndexName)
+            .Doc(new
+            {
+                defaultpath = defaultPath
+            })
+    );
+
+    if (!response.IsValid)
+    {
+        throw new Exception($"[Elasticsearch] Failed to update defaultpath: {response.ServerError?.Error?.Reason}");
+    }
+}
+
 
 
 

@@ -28,7 +28,7 @@ namespace utube.Models
 
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
-        public ICollection<VideoChunk>? Chunks { get; set; } = new List<VideoChunk>();
+      
 
         // 🔐 Encryption fields
         [MaxLength(64)]
@@ -36,5 +36,9 @@ namespace utube.Models
 
         [MaxLength(64)]
         public string? KeyId { get; set; }
+
+        // 🌐 Public (Signed) URL
+        [MaxLength(2048)]
+        public string? PublicUrl { get; set; }
     }
 }

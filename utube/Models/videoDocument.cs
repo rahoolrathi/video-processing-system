@@ -7,6 +7,7 @@ namespace utube.Models
         public Guid Id { get; set; }
         public string name { get; set; }
         public string? videopath { get; set; }
+        public string? defaultpath { get; set; }
         public DateTime UploadedAt { get; set; }
         public string? SelectedImageName { get; set; } // <-- Add this
         public List<FormatType> Formats { get; set; } = new();

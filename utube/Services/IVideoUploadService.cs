@@ -7,8 +7,10 @@ namespace utube.Services
     public interface IVideoUploadService
     {
         Task<Guid> PrepareVideoMetaDataForUploadAsync(Video video);
-        Task UploadChunkAsync(Guid videoId, int chunkIndex, IFormFile chunk, bool isLastChunk);
-        Task<List<int>> GetUploadedChunkIndexesAsync(Guid videoId);
+        //Task UploadChunkAsync(Guid videoId, int chunkIndex, IFormFile chunk, bool isLastChunk);
+        //Task<List<int>> GetUploadedChunkIndexesAsync(Guid videoId);
+        Task<Video?> CompleteUploadAsync(Guid videoId);
+        Task UpdatePublicUrlAsync(Guid videoId, string signedUploadUrl);
 
 
     }
@@ -16,13 +18,13 @@ namespace utube.Services
     public class VideoUploadService : IVideoUploadService
     {
         private readonly IVideoRepository _videoRepository;
-        private readonly IVideoChunkRepository _chunkRepository;
+     
         private readonly IRabbitMqPublisherService _rabbitMqPublisher;
         private readonly ElasticSearchService _elasticSearchService;
-        public VideoUploadService(IVideoRepository videoRepo, IVideoChunkRepository chunkRepo, IRabbitMqPublisherService rabbitMqPublisher, ElasticSearchService elasticSearchService)
+        public VideoUploadService(IVideoRepository videoRepo, IRabbitMqPublisherService rabbitMqPublisher, ElasticSearchService elasticSearchService)
         {
             _videoRepository = videoRepo;
-            _chunkRepository = chunkRepo;
+        
             _rabbitMqPublisher = rabbitMqPublisher;
             _elasticSearchService = elasticSearchService;
         }
@@ -60,72 +62,35 @@ namespace utube.Services
         }
 
 
-        public async Task UploadChunkAsync(Guid videoId, int chunkIndex, IFormFile chunk, bool isLastChunk)
+
+
+
+        public async Task<Video?> CompleteUploadAsync(Guid videoId)
         {
-            var existingChunk = await _chunkRepository.GetChunkByIndexAsync(videoId, chunkIndex);
+            var video = await _videoRepository.MarkUploadCompleteAsync(videoId);
+            if (video == null) return null;
 
-            if (existingChunk == null)
+            var defaultPath = $"videos/{video.Id}/{video.OriginalFilename}";
+            await _elasticSearchService.UpdateDefaultPathAsync(video.Id, defaultPath);
+            Console.WriteLine($"Upload completed for video: {video.PublicUrl} with ID: {video.Id}");
+            return video;
+        }
+
+        public async Task UpdatePublicUrlAsync(Guid videoId, string signedUploadUrl)
+        {
+            try
             {
-                existingChunk = new VideoChunk
-                {
-                    Id = Guid.NewGuid(),
-                    VideoId = videoId,
-                    ChunkIndex = chunkIndex,
-                    Status = ChunkStatus.Pending,
-                    IsLastChunk = isLastChunk,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _chunkRepository.CreateAsync(existingChunk);
+                await _videoRepository.UpdatePublicUrlAsync(videoId, signedUploadUrl);
             }
-
-            var uploadFolder = Path.Combine("Uploads", videoId.ToString());
-            Directory.CreateDirectory(uploadFolder);
-            var chunkPath = Path.Combine(uploadFolder, $"{chunkIndex}.part");
-
-            using (var stream = new FileStream(chunkPath, FileMode.Create))
+            catch (Exception ex)
             {
-                await chunk.CopyToAsync(stream);
-            }
-
-            await _chunkRepository.UpdateStatusAsync(existingChunk.Id, ChunkStatus.Uploaded);
-
-            if (isLastChunk)
-            {
-                var video = await _videoRepository.GetByIdAsync(videoId);
-                if (video != null)
-                {
-                    var mergedFolder = Path.Combine("Merged", videoId.ToString());
-                    Directory.CreateDirectory(mergedFolder);
-
-                    var mergedFilePath = Path.Combine(mergedFolder, video.OriginalFilename);
-
-                    using (var outputStream = new FileStream(mergedFilePath, FileMode.Create))
-                    {
-                        for (int i = 0; i < video.TotalChunks; i++)
-                        {
-                            var chunkFilePath = Path.Combine(uploadFolder, $"{i}.part");
-                            if (!File.Exists(chunkFilePath))
-                                throw new FileNotFoundException($"Chunk {i} not found");
-
-                            var bytes = await File.ReadAllBytesAsync(chunkFilePath);
-                            await outputStream.WriteAsync(bytes);
-                        }
-                    }
-
-                    await _videoRepository.UpdateStatusAsync(video.Id, VideoStatus.Uploaded);
-                    Console.WriteLine(mergedFilePath);
-
-                }
+                Console.WriteLine($"❌ Exception in service while updating public URL: {ex.Message}");
+                // Optionally rethrow or handle
+                throw;
             }
         }
 
-        public async Task<List<int>> GetUploadedChunkIndexesAsync(Guid videoId)
-        {
-            var chunks = await _chunkRepository.GetChunksByStatusAsync(videoId, ChunkStatus.Uploaded);
 
-            return chunks.Select(c => c.ChunkIndex).ToList();
-        }
 
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using utube.DTOs;
 using utube.Models;
+using utube.Repositories;
 using utube.Services;
 
 namespace utube.Controllers
@@ -10,39 +11,58 @@ namespace utube.Controllers
     public class UploaderController : ControllerBase
     {
         private readonly IVideoUploadService _uploadService;
+        private readonly SignedUrlGeneratorService _signedUrlService;
+       
 
-        public UploaderController(IVideoUploadService uploadService)
+
+
+        public UploaderController(IVideoUploadService uploadService, SignedUrlGeneratorService signedUrlService)
         {
             _uploadService = uploadService;
+            _signedUrlService = signedUrlService;
+            
+
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateVideo([FromBody] Video video)
         {
+            Console.WriteLine($"Received video for upload: {video.OriginalFilename} ");
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var videoId = await _uploadService.PrepareVideoMetaDataForUploadAsync(video);
-            return Ok(new { id = videoId });
+            Console.WriteLine($"Video metadata prepared with ID: {videoId}");
+            var blobName = $"videos/{videoId}/{video.OriginalFilename}";
+            var signedUploadUrl = _signedUrlService.GenerateUploadSasUrl(blobName);
+            Console.WriteLine($"Generated signed upload URL: {signedUploadUrl}");
+
+            await _uploadService.UpdatePublicUrlAsync(videoId, signedUploadUrl);
+            return Ok(new
+            {
+                id = videoId,
+                uploadUrl = signedUploadUrl,
+                blobPath = blobName 
+            });
         }
 
-        [HttpPost("chunk")]
-        public async Task<IActionResult> UploadChunk([FromForm] VideoChunkDto dto)
+       
+
+
+
+
+        [HttpPost("complete/{id}")]
+        public async Task<IActionResult> MarkUploadComplete(Guid id)
         {
-            if (dto.Chunk == null || dto.Chunk.Length == 0)
-                return BadRequest("Chunk file missing.");
+            Console.WriteLine($"Upload completed for vidvideo. with ID: ");
+            var video = await _uploadService.CompleteUploadAsync(id);
+            if (video == null) return NotFound();
+            Console.WriteLine($"Upload completed for video: {video.OriginalFilename} with ID: {video.Id}");
+            // await _elasticService.IndexVideoAsync(video); // Optional
+            return Ok(new { publicUrl = video.PublicUrl });
 
-            await _uploadService.UploadChunkAsync(dto.VideoId, dto.ChunkIndex, dto.Chunk, dto.IsLastChunk);
-
-            return Ok(new { message = "Chunk uploaded and tracked." });
         }
 
-        [HttpGet("status/{videoId}")]
-        public async Task<IActionResult> GetUploadedChunks(Guid videoId)
-        {
-            var uploadedChunkIndexes = await _uploadService.GetUploadedChunkIndexesAsync(videoId);
 
-            return Ok(new { completedChunks = uploadedChunkIndexes });
-        }
     }
 }

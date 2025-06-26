@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://127.0.0.1:5502")
+            policy.WithOrigins("http://127.0.0.1:5500", "http://localhost:1234", "http://127.0.0.1:5501", "http://127.0.0.1:5502")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -48,7 +48,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IVideoRepository, VideoRepository>();
-builder.Services.AddScoped<IVideoChunkRepository, VideoChunkRepository>();
+
 builder.Services.AddScoped<IVideoUploadService, VideoUploadService>();
 builder.Services.AddScoped<IEncodingProfileRepository, EncodingProfileRepository>();
 builder.Services.AddScoped<ITranscodeJobRepository, TranscodeJobRepository>();
@@ -59,9 +59,11 @@ builder.Services.AddScoped<ElasticSearchService>();
 
 builder.Services.AddSingleton<AzureBlobUploader>();
 builder.Services.AddSingleton<IRabbitMqPublisherService, RabbitMqPublisherService>();
+
 builder.Services.AddHostedService<TranscodingConsumerService>();
 builder.Services.AddHostedService<ThumbnailConsumerService>();
 builder.Services.AddHostedService<WatermarkingConsumer>();
+
 builder.Services.AddSingleton<SignedUrlGeneratorService>();
 
 var app = builder.Build();

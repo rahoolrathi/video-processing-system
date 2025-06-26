@@ -41,7 +41,7 @@ namespace utube.Controllers
                 return NotFound($"Video with ID {request.VideoId} not found.");
             }
 
-            var mergedFilePath = Path.Combine("Merged", request.VideoId.ToString(), video.OriginalFilename);
+            var mergedFilePath = video.PublicUrl;//Path.Combine("Merged", request.VideoId.ToString(), video.OriginalFilename);
 
             // 2. Create job DTO for RabbitMQ
             var message = new WatermarkingJobDto
@@ -49,7 +49,9 @@ namespace utube.Controllers
                 JobId = job.Id,
                 VideoId = job.VideoId,
                 Text = job.text,
-                VideoPath = mergedFilePath
+                VideoPath = mergedFilePath,
+                filename = video.OriginalFilename
+
             };
 
             try

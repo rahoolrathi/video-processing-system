@@ -56,5 +56,31 @@ namespace utube.Services
 
             return signedUrl.Replace(_blobHostname, _cdnHostname);
         }
+
+        public string GenerateUploadSasUrl(string blobName)
+        {
+            Console.WriteLine($"[SignedUrlGenerator] Generating upload SAS URL for blob: {blobName}");
+            var credential = new StorageSharedKeyCredential(_storageAccountName, _storageAccountKey);
+            var blobUri = new Uri($"{_blobHostname}/{_containerName}/{blobName}");
+            var blobClient = new BlobClient(blobUri, credential);
+
+            var sasBuilder = new BlobSasBuilder
+            {
+                BlobContainerName = _containerName,
+                BlobName = blobName,
+                Resource = "b",
+                ExpiresOn = DateTimeOffset.UtcNow.AddHours(1) // longer for large uploads
+            };
+
+            // ✅ Permissions needed to upload chunks and commit them
+            sasBuilder.SetPermissions(
+     BlobSasPermissions.Read | BlobSasPermissions.Write | BlobSasPermissions.Create | BlobSasPermissions.Add
+ );
+
+
+            var sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
+            return $"{blobClient.Uri}?{sasToken}";
+        }
+
     }
 }

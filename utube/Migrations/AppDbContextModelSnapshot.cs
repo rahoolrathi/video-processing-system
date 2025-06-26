@@ -171,6 +171,10 @@ namespace utube.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PublicUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("nvarchar(24)");
@@ -184,35 +188,6 @@ namespace utube.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Videos");
-                });
-
-            modelBuilder.Entity("utube.Models.VideoChunk", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("ChunkIndex")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsLastChunk")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(24)");
-
-                    b.Property<Guid>("VideoId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("VideoId");
-
-                    b.ToTable("VideoChunks");
                 });
 
             modelBuilder.Entity("utube.Models.Watermarking", b =>
@@ -289,17 +264,6 @@ namespace utube.Migrations
                     b.Navigation("Video");
                 });
 
-            modelBuilder.Entity("utube.Models.VideoChunk", b =>
-                {
-                    b.HasOne("utube.Models.Video", "Video")
-                        .WithMany("Chunks")
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Video");
-                });
-
             modelBuilder.Entity("utube.Models.Watermarking", b =>
                 {
                     b.HasOne("utube.Models.Video", "Video")
@@ -314,11 +278,6 @@ namespace utube.Migrations
             modelBuilder.Entity("utube.Models.EncodingProfile", b =>
                 {
                     b.Navigation("Formats");
-                });
-
-            modelBuilder.Entity("utube.Models.Video", b =>
-                {
-                    b.Navigation("Chunks");
                 });
 #pragma warning restore 612, 618
         }

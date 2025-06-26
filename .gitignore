@@ -363,6 +363,8 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Uploaded chunks and merged/transcoded outputs
-/uploads/
-/Merged/
-/Transcoded/
+Uploads/
+Merged/
+Transcoded/
+**/appsettings.json
+

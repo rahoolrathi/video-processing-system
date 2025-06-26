@@ -22,7 +22,7 @@ namespace utube.Services
             var video = await _vr.GetByIdAsync(videoId);
             if (video == null)
                 throw new Exception("Video not found");
-            var mergedFilePath = Path.Combine("Merged", videoId.ToString(), video.OriginalFilename);
+            var mergedFilePath = video.PublicUrl;//Path.Combine("Merged", videoId.ToString(), video.OriginalFilename);
             var job = new ThumbnailJob
             {
                 VideoId = videoId,

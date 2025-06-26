@@ -10,6 +10,8 @@ namespace utube.Repositories
         Task<Video> CreateAsync(Video video);
         Task<Video> UpdateStatusAsync(Guid videoId, VideoStatus newStatus);
         Task<Video?> GetByIdAsync(Guid videoId);
+        Task<Video?> MarkUploadCompleteAsync(Guid videoId);
+        Task<Video?> UpdatePublicUrlAsync(Guid videoId, string publicUrl);
     }
     public class VideoRepository : IVideoRepository
     {
@@ -51,8 +53,40 @@ namespace utube.Repositories
         public async Task<Video?> GetByIdAsync(Guid videoId)
         {
             return await _context.Videos
-                .Include(v => v.Chunks)
-                .FirstOrDefaultAsync(v => v.Id == videoId);
+         .FirstOrDefaultAsync(v => v.Id == videoId);
         }
+
+        public async Task<Video?> MarkUploadCompleteAsync(Guid videoId)
+        {
+            var video = await _context.Videos.FindAsync(videoId);
+            if (video == null) return null;
+
+            video.Status = VideoStatus.Uploaded;
+            //video.FilePath = $"videos/{video.Id}/{video.OriginalFilename}";
+            video.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return video;
+        }
+        public async Task<Video?> UpdatePublicUrlAsync(Guid videoId, string publicUrl)
+        {
+            var video = await _context.Videos.FindAsync(videoId);
+
+            if (video == null) return null;
+
+            Console.WriteLine($"Updating public URL for video ID: {video.Id} to {publicUrl}");
+
+            video.PublicUrl = publicUrl;
+           
+
+          
+            await _context.SaveChangesAsync();
+
+            return video;
+        }
+
+
+
+
     }
 }
