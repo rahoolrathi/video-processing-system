@@ -366,5 +366,6 @@ FodyWeavers.xsd
 Uploads/
 Merged/
 Transcoded/
-**/appsettings.json
 appsettings.json
+**/appsettings.json
+
