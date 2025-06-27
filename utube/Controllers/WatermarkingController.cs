@@ -56,7 +56,8 @@ namespace utube.Controllers
 
             try
             {
-               
+                Console.WriteLine($"[WatermarkingController] Publishing job to queue: {message.JobId} for video {message.VideoId}");
+
                 await _rabbitMqPublisher.Publish("Watermarking-queue", message);
                 
 

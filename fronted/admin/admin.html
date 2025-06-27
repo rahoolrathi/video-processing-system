@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Transcoding Profiles Admin</title>
+  <link rel="stylesheet" href="admin-styles.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <header class="admin-header">
+      <h1>Transcoding Profiles Admin</h1>
+      <p>Manage video transcoding profiles for your application</p>
+    </header>
+
+    <div class="admin-content">
+      <div class="profiles-panel">
+        <div class="panel-header">
+          <h2>Existing Profiles</h2>
+          <button id="addProfileBtn" class="btn btn-primary">
+            <span class="icon">+</span> Add New Profile
+          </button>
+        </div>
+
+        <div class="profiles-list" id="profilesList">
+          <div class="profile-list-empty">Loading profiles...</div>
+        </div>
+      </div>
+
+      <div class="profile-editor" id="profileEditor">
+        <div class="editor-header">
+          <h2 id="editorTitle">Add New Profile</h2>
+          <button id="closeEditorBtn" class="btn btn-icon">×</button>
+        </div>
+
+        <form id="profileForm">
+          <input type="hidden" id="profileId" value="">
+
+          <div class="form-group">
+            <label for="profileName">Profile Name*</label>
+            <input type="text" id="profileName" placeholder="e.g., HD 1080p" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="resolution">Resolution*</label>
+              <input type="text" id="resolution" placeholder="e.g., 1920x1080" required>
+            </div>
+
+            <div class="form-group">
+              <label for="bitrate">Bitrate*</label>
+              <input type="text" id="bitrate" placeholder="e.g., 5000 kbps" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Format*</label>
+            <div class="format-options">
+              <label class="format-option">
+                <input type="checkbox" id="formatHLS" value="HLS">
+                <span class="format-label">HLS</span>
+                <span class="format-info" title="HTTP Live Streaming - Best for Apple devices and Safari">ⓘ</span>
+              </label>
+              <label class="format-option">
+                <input type="checkbox" id="formatDASH" value="DASH">
+                <span class="format-label">DASH</span>
+                <span class="format-info" title="Dynamic Adaptive Streaming over HTTP - Industry standard for most platforms">ⓘ</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+            <button type="submit" id="saveProfileBtn" class="btn btn-success">Save Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Confirm Delete</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this profile? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

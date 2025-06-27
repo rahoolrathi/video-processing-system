@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chunked Video Uploader & Processor</title>
+  
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Upload Section -->
+        <div id="uploadSection">
+            <h1>Chunked Video Uploader</h1>
+            <p>Upload large video files with automatic chunking and resume capability</p>
+            
+            <div class="upload-area" id="uploadArea">
+                <p>Drag & drop your video file here or</p>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Choose Video File
+                </button>
+                <input type="file" id="fileInput" accept="video/*" >
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <h3>File Information</h3>
+                <div id="fileDetails"></div>
+            </div>
+            
+            <div class="controls" id="controls">
+                <button class="control-btn start-btn" id="startBtn">Start Upload</button>
+            </div>
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0%</div>
+                <div class="chunk-info" id="chunkInfo"></div>
+            </div>
+            
+            <div class="status" id="status"></div>
+        </div>
+
+       <div id="processingSection" class="processing-section">
+    <h1>Video Processing</h1>
+    <p>Choose a processing option for your uploaded video</p>
+    
+    <div class="video-info" id="videoInfo">
+        <h3>Uploaded Video</h3>
+        <div id="uploadedVideoDetails"></div>
+        
+        <!-- NEW: Public URL Display -->
+        <div class="public-url-info" id="publicUrlInfo" style="display: none;">
+            <h4>Public Video URL</h4>
+            <div class="url-display-container">
+                <input type="text" id="publicUrlDisplay" class="public-url-input" readonly>
+                <button id="copyUrlBtn" class="copy-url-btn" title="Copy URL">📋</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="processing-options">
+        <button class="processing-btn thumbnail-btn" id="thumbnailBtn">
+            <div class="btn-icon">🖼️</div>
+            <div class="btn-text">
+                <h3>Thumbnail</h3>
+                <p>Generate video thumbnails</p>
+            </div>
+        </button>
+
+        <button class="processing-btn transcoding-btn" id="transcodingBtn">
+            <div class="btn-icon">🎬</div>
+            <div class="btn-text">
+                <h3>Transcoding</h3>
+                <p>Convert video format & quality</p>
+            </div>
+        </button>
+
+        <button class="processing-btn watermark-btn" id="watermarkBtn">
+            <div class="btn-icon">💧</div>
+            <div class="btn-text">
+                <h3>Water Marking</h3>
+                <p>Add watermark to video</p>
+            </div>
+        </button>
+
+        <!-- NEW: Play Video Button -->
+        <button class="processing-btn play-video-btn" id="playVideoBtn" disabled>
+            <div class="btn-icon">▶️</div>
+            <div class="btn-text">
+                <h3>Play Video</h3>
+                <p>Watch your uploaded video</p>
+            </div>
+        </button>
+    </div>
+
+    <button class="back-btn" id="backBtn">← Back to Upload</button>
+</div>
+
+<!-- NEW: Video Player Modal -->
+<div id="videoPlayerModal" class="video-modal" style="display: none;">
+    <div class="video-modal-content">
+        <div class="video-modal-header">
+            <h2>Video Player</h2>
+            <button id="closeVideoModal" class="close-modal-btn">×</button>
+        </div>
+        
+        <div class="video-modal-body">
+            <div class="video-player-wrapper">
+                <video id="modalVideoPlayer" controls preload="metadata">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+            <div class="video-modal-info">
+                <div class="video-title" id="modalVideoTitle">Video Title</div>
+                <div class="video-url-section">
+                    <label>Public URL:</label>
+                    <div class="modal-url-container">
+                        <input type="text" id="modalPublicUrl" class="modal-url-input" readonly>
+                        <button id="modalCopyBtn" class="modal-copy-btn">📋 Copy</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="video-modal-footer">
+            <button id="closeVideoPlayerBtn" class="btn-secondary">Close Player</button>
+        </div>
+    </div>
+</div>
+
+        <!-- Thumbnail Generation Section -->
+        <div id="thumbnailSection" class="thumbnail-section">
+            <h1>Thumbnail Generation</h1>
+            <p>Generating thumbnails for your video</p>
+
+            <div class="thumbnail-progress" id="thumbnailProgress">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="thumbnailProgressFill"></div>
+                </div>
+                <div class="progress-text" id="thumbnailProgressText">0%</div>
+                <div class="thumbnail-status" id="thumbnailStatus">Initializing...</div>
+            </div>
+
+            <div class="thumbnail-grid" id="thumbnailGrid">
+                <!-- Thumbnails will be populated here -->
+            </div>
+
+            <div class="thumbnail-actions" id="thumbnailActions">
+                <button class="select-cover-btn" id="selectCoverBtn" disabled>
+                    Set as Video Cover
+                </button>
+                <button class="back-to-processing-btn" id="backToProcessingBtn">
+                    ← Back to Processing
+                </button>
+                <button class="back-to-processing-btn" id="startthumbnailbtn">
+                    Start Thumbnail Generation
+                </button>
+            </div>
+        </div>
+
+        <!-- Transcoding Configuration Section -->
+        <div id="transcodingSection" class="transcoding-section">
+            <h1>Video Transcoding</h1>
+            <p>Select a transcoding profile and configure your video output</p>
+
+            <div class="transcoding-config">
+                <div class="profile-selection">
+                    <label for="profileSelect">Select Transcoding Profile:</label>
+                    <select id="profileSelect" class="profile-dropdown">
+                        <option value="">Select a profile...</option>
+                    </select>
+                </div>
+
+                <div class="profile-details" id="profileDetails">
+                    <h3>Profile Details</h3>
+                    
+                    <!-- Format Display - Make it prominent -->
+                    <div class="format-highlight">
+                        <label>Output Format:</label>
+                        <span id="format" class="format-value">-</span>
+                    </div>
+                    
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <label>Resolution:</label>
+                            <span id="resolution">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <label>Video Bitrate:</label>
+                            <span id="bitrate">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transcoding-actions">
+                    <button class="transcode-btn" id="transcodeBtn" disabled>
+                        Start Transcoding
+                    </button>
+                  
+                </div>
+
+                <div class="transcoding-progress" id="transcodingProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="transcodingProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="transcodingProgressText">0%</div>
+                    <div class="transcoding-status" id="transcodingStatus"></div>
+                </div>
+            </div>
+
+            <button class="back-to-processing-btn" id="backToTranscodingProcessingBtn">
+                ← Back to Processing
+            </button>
+        </div>
+
+        <!-- Watermarking Section -->
+        <div id="watermarkingSection" class="watermarking-section">
+            <h1>Video Watermarking</h1>
+            <p>Manage watermarks for your videos</p>
+
+            <div class="watermark-actions">
+                <button class="watermark-action-btn new-watermark-btn" id="newWatermarkBtn">
+                    <div class="btn-icon">➕</div>
+                    <div class="btn-text">
+                        <h3>Add New Watermark</h3>
+                        <p>Add text watermark to current video</p>
+                    </div>
+                </button>
+            </div>
+
+            <div class="existing-watermarks" id="existingWatermarksSection">
+                <h3>Previously Watermarked Videos</h3>
+                <div class="watermarked-videos-grid" id="watermarkedVideosGrid">
+                    <!-- Existing watermarked videos will be populated here -->
+                </div>
+            </div>
+
+            <button class="back-btn" id="backToProcessingFromWatermarkBtn">
+                ← Back to Processing
+            </button>
+        </div>
+    </div>
+
+    <!-- Watermark Modal -->
+    <div id="watermarkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Text Watermark</h2>
+                <span class="close" id="closeWatermarkModal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="video-info-modal">
+                    <h4>Video Information</h4>
+                    <p><strong>File Name:</strong> <span id="modalVideoName">-</span></p>
+                    <p><strong>Upload ID:</strong> <span id="modalVideoId">-</span></p>
+                </div>
+                
+                <div class="watermark-form">
+                    <div class="form-group">
+                        <label for="watermarkText">Watermark Text:</label>
+                        <input type="text" id="watermarkText" placeholder="Enter your watermark text..." maxlength="100">
+                        <small class="char-counter">0/100 characters</small>
+                    </div>
+                    
+                    <!-- <div class="form-group">
+                        <label for="watermarkPosition">Position:</label>
+                        <select id="watermarkPosition">
+                            <option value="top-left">Top Left</option>
+                            <option value="top-right" selected>Top Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="center">Center</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="watermarkOpacity">Opacity:</label>
+                        <input type="range" id="watermarkOpacity" min="0.1" max="1" step="0.1" value="0.7">
+                        <span class="opacity-value">70%</span>
+                    </div> -->
+                </div>
+                
+                <div class="watermark-progress" id="watermarkProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="watermarkProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="watermarkProgressText">0%</div>
+                    <div class="watermark-status" id="watermarkStatus"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="back-btn" id="backWatermarkBtn">Back</button>
+                <button class="apply-watermark-btn" id="applyWatermarkBtn">Apply Watermark</button>
+            </div>
+        </div>
+    </div>
+  
+
+
+    <script src="https://unpkg.com/@azure/storage-blob@10.5.0/browser/azure-storage-blob.min.js"></script>
+    <script src="./index.js"></script>
+
+
+</body>
+</html>

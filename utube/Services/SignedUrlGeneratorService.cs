@@ -79,7 +79,8 @@ namespace utube.Services
 
 
             var sasToken = sasBuilder.ToSasQueryParameters(credential).ToString();
-            return $"{blobClient.Uri}?{sasToken}";
+            string signedUrl = $"{blobClient.Uri}?{sasToken}";
+            return signedUrl.Replace(_blobHostname, _cdnHostname);
         }
 
     }

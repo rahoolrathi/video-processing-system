@@ -39,9 +39,7 @@ namespace utube.helper
                     }
 
                     dashArgs.Append($"-f dash -seg_duration 4 -use_template 1 -use_timeline 1 ");
-                    //dashArgs.Append($"-encryption_scheme cenc-aes-ctr ");
-                    //dashArgs.Append($"-encryption_key {encryptionKey} ");
-                    //dashArgs.Append($"-encryption_kid {keyId} ");
+                   
 
                     dashArgs.Append("-init_seg_name init-stream$RepresentationID$.mp4 ");
                     dashArgs.Append("-media_seg_name chunk-stream$RepresentationID$-$Number$.m4s ");
