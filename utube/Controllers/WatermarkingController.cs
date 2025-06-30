@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using utube.DTOs;
 using utube.Enums;
+using utube.Interfaces;
 using utube.Repositories;
 using utube.Services;
 
@@ -13,13 +14,14 @@ namespace utube.Controllers
 
 
         private readonly IWatermarkingRepository _watermarking;
-        private readonly IRabbitMqPublisherService _rabbitMqPublisher;
+        private readonly IMessagePublisher _publisher;
+
         private readonly IVideoRepository _videoRepository;
         private readonly AzureSignedUrlGenerator _signedUrlService;
-        public WatermarkingController(IWatermarkingRepository watermarking,IRabbitMqPublisherService rabbitMqPublisherService, IVideoRepository videoRepository, AzureSignedUrlGenerator signedUrlService)
+        public WatermarkingController(IWatermarkingRepository watermarking, IMessagePublisher publisher, IVideoRepository videoRepository, AzureSignedUrlGenerator signedUrlService)
         {
             _watermarking = watermarking;
-            _rabbitMqPublisher = rabbitMqPublisherService;
+            _publisher = publisher;
             _videoRepository = videoRepository;
             _signedUrlService = signedUrlService;
         }
@@ -58,7 +60,7 @@ namespace utube.Controllers
             {
                 Console.WriteLine($"[WatermarkingController] Publishing job to queue: {message.JobId} for video {message.VideoId}");
 
-                await _rabbitMqPublisher.Publish("Watermarking-queue", message);
+                await _publisher.Publish("Watermarking-queue", message);
                 
 
 

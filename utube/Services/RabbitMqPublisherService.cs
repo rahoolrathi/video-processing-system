@@ -2,17 +2,14 @@
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
+using utube.Interfaces;
 using utube.Options;
 
 namespace utube.Services
 {
-    public interface IRabbitMqPublisherService
-    {
-        Task Publish<T>(string queueName, T message);
-        Task InitializeAsync();
-    }
+   
 
-    public class RabbitMqPublisherService : IRabbitMqPublisherService
+    public class RabbitMqPublisherService :  IMessagePublisher
     {
         private IConnection _connection;
         private IChannel _channel;

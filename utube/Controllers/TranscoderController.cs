@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using utube.Dtos;
 using utube.Enums;
+using utube.Interfaces;
 using utube.Models;
 using utube.Repositories;
 using utube.Services;
@@ -12,16 +13,17 @@ namespace utube.Controllers
     [Route("api/[controller]")]
     public class TranscoderController : ControllerBase
     {
-        private readonly IRabbitMqPublisherService _rabbitMqPublisher;
+        private readonly IMessagePublisher _publisher;
+
         private readonly IVideoRepository _videoRepository;
         private readonly ITranscodeJobRepository _transcodeJobRepository;
 
         public TranscoderController(
-            IRabbitMqPublisherService rabbitMqPublisher,
+            IMessagePublisher publisher,
             IVideoRepository videoRepository,
             ITranscodeJobRepository transcodeJobRepository)
         {
-            _rabbitMqPublisher = rabbitMqPublisher;
+            _publisher = publisher;
             _videoRepository = videoRepository;
             _transcodeJobRepository = transcodeJobRepository;
         }
@@ -56,7 +58,7 @@ namespace utube.Controllers
             try
             {
                 // 1. Publish to RabbitMQ
-                await _rabbitMqPublisher.Publish("transcoding-queue", message);
+                await _publisher.Publish("transcoding-queue", message);
                 //job2
 
 

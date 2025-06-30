@@ -1,5 +1,6 @@
 ﻿using System.Security.Cryptography;
 using utube.Enums;
+using utube.Interfaces;
 using utube.Models;
 using utube.Repositories;
 namespace utube.Services
@@ -18,14 +19,15 @@ namespace utube.Services
     public class VideoUploadService : IVideoUploadService
     {
         private readonly IVideoRepository _videoRepository;
-     
-        private readonly IRabbitMqPublisherService _rabbitMqPublisher;
+
+        private readonly IMessagePublisher _publisher;
+
         private readonly ElasticSearchService _elasticSearchService;
-        public VideoUploadService(IVideoRepository videoRepo, IRabbitMqPublisherService rabbitMqPublisher, ElasticSearchService elasticSearchService)
+        public VideoUploadService(IVideoRepository videoRepo, IMessagePublisher publisher, ElasticSearchService elasticSearchService)
         {
             _videoRepository = videoRepo;
-        
-            _rabbitMqPublisher = rabbitMqPublisher;
+
+            _publisher = publisher;
             _elasticSearchService = elasticSearchService;
         }
 

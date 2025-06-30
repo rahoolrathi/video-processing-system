@@ -72,7 +72,11 @@ else
     throw new Exception("Unsupported or missing StorageProvider in config.");
 
 
-builder.Services.AddSingleton<IRabbitMqPublisherService, RabbitMqPublisherService>();
+if (builder.Configuration["Messaging:Provider"] == "RabbitMQ")
+{
+    builder.Services.AddSingleton<IMessagePublisher, RabbitMqPublisherService>();
+}
+
 
 builder.Services.AddHostedService<TranscodingConsumerService>();
 builder.Services.AddHostedService<ThumbnailConsumerService>();

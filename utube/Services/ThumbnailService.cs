@@ -1,5 +1,6 @@
 ﻿using utube.DTOs;
 using utube.Enums;
+using utube.Interfaces;
 using utube.Models;
 using utube.Repositories;
 
@@ -8,12 +9,13 @@ namespace utube.Services
     public class ThumbnailService
     {
         private readonly IThumbnailJobRepository _repo;
-        private readonly IRabbitMqPublisherService _mq;
+        private readonly IMessagePublisher _publisher;
+
         private readonly IVideoRepository _vr;
-        public ThumbnailService(IThumbnailJobRepository repo, IRabbitMqPublisherService mq, IVideoRepository vr)
+        public ThumbnailService(IThumbnailJobRepository repo, IMessagePublisher publisher, IVideoRepository vr)
         {
             _repo = repo;
-            _mq = mq;
+            _publisher = publisher;
             _vr = vr;
         }
 
@@ -44,7 +46,7 @@ namespace utube.Services
             };
 
 
-            _mq.Publish("thumbnail-generation-queue", message);
+            _publisher.Publish("thumbnail-generation-queue", message);
             job.Status = JobStatus.Processing;
             await _repo.UpdateAsync(job);
             return job.Id;
