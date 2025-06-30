@@ -1,8 +1,9 @@
 ﻿using Azure.Storage.Blobs;
+using utube.Interfaces;
 
 namespace utube.Services
 {
-    public class AzureBlobUploader
+    public class AzureBlobUploader: ICloudStorageUploader
     {
         private readonly BlobContainerClient _containerClient;
 

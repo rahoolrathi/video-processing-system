@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Nest;
 using utube.Data;
+using utube.Interfaces;
 using utube.Repositories;
 using utube.Services;
 
@@ -57,7 +58,16 @@ builder.Services.AddScoped<IWatermarkingRepository, WatermarkingRepository>();
 builder.Services.AddScoped<ThumbnailService>();
 builder.Services.AddScoped<ElasticSearchService>();
 
-builder.Services.AddSingleton<AzureBlobUploader>();
+// Cloud Storage setup
+var config = builder.Configuration;
+var storageProvider = config["StorageProvider"];
+
+if (storageProvider == "Azure")
+    builder.Services.AddSingleton<ICloudStorageUploader, AzureBlobUploader>();
+else
+    throw new Exception("Unsupported or missing StorageProvider in config.");
+
+
 builder.Services.AddSingleton<IRabbitMqPublisherService, RabbitMqPublisherService>();
 
 builder.Services.AddHostedService<TranscodingConsumerService>();

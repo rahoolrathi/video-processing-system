@@ -84,7 +84,7 @@ namespace utube.Services
                 using var scope = _serviceProvider.CreateScope();
                 var transcodeJobRepository = scope.ServiceProvider.GetRequiredService<ITranscodeJobRepository>();
                 var encodingProfileRepository = scope.ServiceProvider.GetRequiredService<IEncodingProfileRepository>();
-                var azureUploader = scope.ServiceProvider.GetRequiredService<AzureBlobUploader>();
+                var cloudServiceProvider = scope.ServiceProvider.GetRequiredService<AzureBlobUploader>();
                 var elasticSearchService = scope.ServiceProvider.GetRequiredService<ElasticSearchService>();
                 var _iVideorepo = scope.ServiceProvider.GetRequiredService<IVideoRepository>();
                 // Step 1: Mark job as Processing
@@ -134,7 +134,7 @@ namespace utube.Services
                     );
 
                     // Step 4: Upload to Azure
-                    await azureUploader.UploadFolderAsync(outputDir, remotePath);
+                    await cloudServiceProvider.UploadFolderAsync(outputDir, remotePath);
                     Console.WriteLine("[Consumer] Upload complete.");
 
                     // Optional cleanup
