@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using System.Text;
+using utube.Options;
 
 namespace utube.Services
 {
@@ -14,9 +16,11 @@ namespace utube.Services
     {
         private IConnection _connection;
         private IChannel _channel;
+        private readonly RabbitMqOptions _options;
 
-        public RabbitMqPublisherService()
+        public RabbitMqPublisherService(IOptions<RabbitMqOptions> options)
         {
+            _options = options.Value;
             InitializeAsync(); // <-- Sync wrapper for async init
         }
 
@@ -26,17 +30,14 @@ namespace utube.Services
         {
             var factory = new ConnectionFactory
             {
-                UserName = "guest",
-                Password = "guest",
-                VirtualHost = "/",
-                HostName = "localhost"
+                HostName = _options.HostName,
+                UserName = _options.UserName,
+                Password = _options.Password,
+                VirtualHost = _options.VirtualHost
             };
 
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
-
-
-
         }
 
         public async Task Publish<T>(string queueName, T message)

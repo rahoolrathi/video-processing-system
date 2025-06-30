@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -7,6 +8,7 @@ using utube.DTOs.utube.Dtos;
 using utube.Enums;
 using utube.helper;
 using utube.Models;
+using utube.Options;
 using utube.Repositories;
 
 namespace utube.Services
@@ -16,10 +18,13 @@ namespace utube.Services
         private IConnection _connection;
         private IChannel _channel;
         private readonly IServiceProvider _serviceProvider;
+        private readonly RabbitMqOptions _rabbitOptions;
 
-        public TranscodingConsumerService(IServiceProvider serviceProvider)
+
+        public TranscodingConsumerService(IServiceProvider serviceProvider, IOptions<RabbitMqOptions> rabbitOptions)
         {
             _serviceProvider = serviceProvider;
+            _rabbitOptions = rabbitOptions.Value;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,11 +33,12 @@ namespace utube.Services
             {
                 var factory = new ConnectionFactory
                 {
-                    UserName = "guest",
-                    Password = "guest",
-                    VirtualHost = "/",
-                    HostName = "localhost"
+                    UserName = _rabbitOptions.UserName,
+                    Password = _rabbitOptions.Password,
+                    VirtualHost = _rabbitOptions.VirtualHost,
+                    HostName = _rabbitOptions.HostName
                 };
+
 
                 _connection = await factory.CreateConnectionAsync();
                 _channel = await _connection.CreateChannelAsync();

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Nest;
 using utube.Data;
 using utube.Interfaces;
+using utube.Options;
 using utube.Repositories;
 using utube.Services;
 
@@ -57,7 +58,7 @@ builder.Services.AddScoped<IThumbnailJobRepository, ThumbnailJobRepository>();
 builder.Services.AddScoped<IWatermarkingRepository, WatermarkingRepository>();
 builder.Services.AddScoped<ThumbnailService>();
 builder.Services.AddScoped<ElasticSearchService>();
-
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMQ"));
 // Cloud Storage setup
 var config = builder.Configuration;
 var storageProvider = config["StorageProvider"];
