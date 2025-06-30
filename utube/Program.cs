@@ -63,7 +63,10 @@ var config = builder.Configuration;
 var storageProvider = config["StorageProvider"];
 
 if (storageProvider == "Azure")
+{
     builder.Services.AddSingleton<ICloudStorageUploader, AzureBlobUploader>();
+    builder.Services.AddSingleton<ISignedUrlGenerator, AzureSignedUrlGenerator>();
+}
 else
     throw new Exception("Unsupported or missing StorageProvider in config.");
 
@@ -74,7 +77,6 @@ builder.Services.AddHostedService<TranscodingConsumerService>();
 builder.Services.AddHostedService<ThumbnailConsumerService>();
 builder.Services.AddHostedService<WatermarkingConsumer>();
 
-builder.Services.AddSingleton<SignedUrlGeneratorService>();
 
 var app = builder.Build();
 

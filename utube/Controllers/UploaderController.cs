@@ -11,12 +11,12 @@ namespace utube.Controllers
     public class UploaderController : ControllerBase
     {
         private readonly IVideoUploadService _uploadService;
-        private readonly SignedUrlGeneratorService _signedUrlService;
+        private readonly AzureSignedUrlGenerator _signedUrlService;
        
 
 
 
-        public UploaderController(IVideoUploadService uploadService, SignedUrlGeneratorService signedUrlService)
+        public UploaderController(IVideoUploadService uploadService, AzureSignedUrlGenerator signedUrlService)
         {
             _uploadService = uploadService;
             _signedUrlService = signedUrlService;

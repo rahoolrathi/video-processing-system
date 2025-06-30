@@ -15,8 +15,8 @@ namespace utube.Controllers
         private readonly IWatermarkingRepository _watermarking;
         private readonly IRabbitMqPublisherService _rabbitMqPublisher;
         private readonly IVideoRepository _videoRepository;
-        private readonly SignedUrlGeneratorService _signedUrlService;
-        public WatermarkingController(IWatermarkingRepository watermarking,IRabbitMqPublisherService rabbitMqPublisherService, IVideoRepository videoRepository, SignedUrlGeneratorService signedUrlService)
+        private readonly AzureSignedUrlGenerator _signedUrlService;
+        public WatermarkingController(IWatermarkingRepository watermarking,IRabbitMqPublisherService rabbitMqPublisherService, IVideoRepository videoRepository, AzureSignedUrlGenerator signedUrlService)
         {
             _watermarking = watermarking;
             _rabbitMqPublisher = rabbitMqPublisherService;

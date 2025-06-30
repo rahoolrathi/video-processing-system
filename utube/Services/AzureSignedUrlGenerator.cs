@@ -3,10 +3,11 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Configuration;
 using System;
+using utube.Interfaces;
 
 namespace utube.Services
 {
-    public class SignedUrlGeneratorService
+    public class AzureSignedUrlGenerator: ISignedUrlGenerator
     {
         private readonly string _storageAccountName;
         private readonly string _storageAccountKey;
@@ -14,7 +15,7 @@ namespace utube.Services
         private readonly string _blobHostname;
         private readonly string _cdnHostname;
 
-        public SignedUrlGeneratorService(IConfiguration configuration)
+        public AzureSignedUrlGenerator(IConfiguration configuration)
         {
             _containerName = configuration["AzureStorage:ContainerName"];
             _blobHostname = configuration["BlobStorage:Hostname"];

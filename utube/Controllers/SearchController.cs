@@ -10,9 +10,9 @@ namespace utube.Controllers
     public class SearchController : ControllerBase
     {
         private readonly ElasticSearchService _searchService;
-        private readonly SignedUrlGeneratorService _signedUrlService;
+        private readonly AzureSignedUrlGenerator _signedUrlService;
 
-        public SearchController(ElasticSearchService searchService, SignedUrlGeneratorService signedUrlService)
+        public SearchController(ElasticSearchService searchService, AzureSignedUrlGenerator signedUrlService)
         {
             _searchService = searchService;
             _signedUrlService = signedUrlService;
